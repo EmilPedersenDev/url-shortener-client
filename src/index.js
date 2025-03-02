@@ -1,10 +1,30 @@
 import axios from "axios";
 import "./main.css"
 const form = document.getElementById("create-url-form");
+const shortUrlResult = document.getElementById('short-url-result');
+
+const createShortUrl = async (urlInputValue) => {
+  const {data} = await axios.post("http://localhost:3000/v1", {
+    originalUrl: urlInputValue,
+  }, {
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+    }
+  });
+
+  return data?.shortUrl;
+}
+
+const displayShortUrl = (shortUrl) => {
+  const shortUrlParagraph = document.createElement('p');
+  shortUrlParagraph.textContent = shortUrl;
+  shortUrlResult.appendChild(shortUrlParagraph);
+}
 
 form.addEventListener("submit", async (e) => {
   try {
     e.preventDefault();
+    shortUrlResult.replaceChildren();
 
     const urlInput = form.querySelector('input');
     const urlInputValue = urlInput.value;
@@ -13,20 +33,13 @@ form.addEventListener("submit", async (e) => {
       throw new Error("No url provided")
     }
 
-    console.log(urlInputValue)
-    //
-    // const result = await axios.post("https://jsonplaceholder.typicode.com/posts", {
-    //   title: 'foo',
-    //   body: 'bar',
-    //   userId: 1,
-    // }, {
-    //   headers: {
-    //     'Content-type': 'application/json; charset=UTF-8',
-    //   }
-    // });
-    //
-    // console.log(result)
+    const shortUrl = await createShortUrl(urlInputValue);
 
+    if(!shortUrl) {
+      throw new Error('Error when creating short url')
+    }
+
+    return displayShortUrl(shortUrl);
   } catch (e) {
     console.error(e)
   }
